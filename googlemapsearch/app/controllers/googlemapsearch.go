@@ -13,15 +13,16 @@ type GoogleMapSearchContextInterface interface {
 
 type GoogleMapSearchInterface interface {
 	PostGoogleMapSearch(contexts GoogleMapSearchContextInterface, request *http.Request)
-	GetLatLong(address string) (latlong string)
+	GetLatLong(address string, keyInput string) (latlong string)
 }
 
 type GoogleMapSearchController struct{}
 
 func (controller *GoogleMapSearchController) PostGoogleMapSearch(contexts GoogleMapSearchContextInterface, request *http.Request) {
 	dataInput, _ := contexts.GetPostForm("address")
-	latlong := controller.GetLatLong(dataInput)
-	resp, err := http.Get("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + latlong + "&rankby=distance&type=restaurant&key=AIzaSyBXXKuVIBv2vqs2sUYQ9iYeqQUYCMHWfD0")
+	keyInput, _ := contexts.GetPostForm("key")
+	latlong := controller.GetLatLong(dataInput, keyInput)
+	resp, err := http.Get("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + latlong + "&rankby=distance&type=restaurant&key=" + keyInput)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -31,8 +32,8 @@ func (controller *GoogleMapSearchController) PostGoogleMapSearch(contexts Google
 	contexts.JSON(200, results["results"])
 }
 
-func (controller *GoogleMapSearchController) GetLatLong(address string) (latlong string) {
-	resp, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key=AIzaSyBXXKuVIBv2vqs2sUYQ9iYeqQUYCMHWfD0")
+func (controller *GoogleMapSearchController) GetLatLong(address string, keyInput string) (latlong string) {
+	resp, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key=" + keyInput)
 	if err != nil {
 		fmt.Println(err)
 	}
