@@ -1,0 +1,44 @@
+version: '3.5'
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+        - ./nginx/config/site.conf:/etc/nginx/conf.d/default.conf
+        # - ./nginx/.certs:/etc/nginx/ssl
+    ports:
+        - 80:80
+        # - 443:443
+    networks:
+      - gonet
+    links:
+        - build-golang
+        - run-golang
+    restart: always
+  
+  build-golang:
+    container_name: build-golang
+    build:
+      context: ./googlemapsearch
+      dockerfile: .Dockerfile
+    volumes:
+        - ./googlemapsearch/app:/googlemapsearch/app
+    networks:
+      - gonet
+    restart: always
+
+  run-golang:
+    container_name: run-golang
+    build: ./googlemapsearch
+    volumes:
+      - ./googlemapsearch:/go/src/googlemapsearch
+    working_dir: /go/src/googlemapsearch/app
+    networks:
+      - gonet
+    command: "sh docker-entrypoint.sh"
+    restart: always
+
+networks:
+  gonet:
